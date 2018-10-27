@@ -1,5 +1,11 @@
-%global MESOS_VERSION
-%global MESOS_RELEASE
+%if %{?!MESOS_VERSION:1}0
+%global MESOS_VERSION 1.7.0
+%endif
+%if %{?!MESOS_RELEASE:1}0
+%global MESOS_RELEASE 1
+%endif
+
+%define _unpackaged_files_terminate_build 0
 
 Name:          mesos
 Version:       %{MESOS_VERSION}
@@ -96,6 +102,7 @@ This package provides files for developing Mesos frameworks/modules.
     --enable-ssl \
     --enable-grpc \
     --enable-hardening \
+    --with-network-isolator \
     --enable-xfs-disk-isolator=%{_with_xfs}
 
 %make_build %{?_smp_mflags} V=0
