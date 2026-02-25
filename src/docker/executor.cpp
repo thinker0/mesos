@@ -73,7 +73,6 @@
 
 #include "slave/constants.hpp"
 
-namespace io = process::io;
 namespace spec = mesos::internal::slave::cni::spec;
 
 using namespace mesos;
@@ -1003,8 +1002,8 @@ private:
   {
 
     const Future<Option<int>>& subStat = sub->status();
-    const Future<string>& output = io::read(sub->out().get());
-    const Future<string>& error = io::read(sub->err().get());     
+    const Future<string>& output = process::io::read(sub->out().get());
+    const Future<string>& error = process::io::read(sub->err().get());     
 
     if (!subStat.isReady()) {
       return ::Error("Failed to get the exit status of the CNI plugin subprocess.");

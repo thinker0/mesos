@@ -847,8 +847,8 @@ elseif (NOT WIN32) # Windows defaults to `libwinio`, a native implementation.
     BUILD_BYPRODUCTS  ${LIBEV_BYPRODUCTS}
     PATCH_COMMAND     ${LIBEV_PATCH_CMD}
     CONFIGURE_COMMAND ${LIBEV_ROOT}/configure --prefix=${LIBEV_ROOT}-build
-    BUILD_COMMAND     ${MAKE_PROGRAM}
-    INSTALL_COMMAND   ${MAKE_PROGRAM} install
+    BUILD_COMMAND     ${MAKE_PROGRAM} -j1
+    INSTALL_COMMAND   ${MAKE_PROGRAM} -j1 install
     URL               ${LIBEV_URL}
     URL_HASH          ${LIBEV_HASH})
 
@@ -1601,10 +1601,10 @@ else ()
 endif ()
 
 set(GRPC_BUILD_CMD
-  ${CMAKE_COMMAND} --build . --config $<CONFIG> --target gpr &&
-  ${CMAKE_COMMAND} --build . --config $<CONFIG> --target grpc${GRPC_VARIANT} &&
-  ${CMAKE_COMMAND} --build . --config $<CONFIG> --target grpc++${GRPC_VARIANT} &&
-  ${CMAKE_COMMAND} --build . --config $<CONFIG> --target grpc_cpp_plugin)
+  ${CMAKE_COMMAND} --build . --config $<CONFIG> --target gpr -- -j1 &&
+  ${CMAKE_COMMAND} --build . --config $<CONFIG> --target grpc${GRPC_VARIANT} -- -j1 &&
+  ${CMAKE_COMMAND} --build . --config $<CONFIG> --target grpc++${GRPC_VARIANT} -- -j1 &&
+  ${CMAKE_COMMAND} --build . --config $<CONFIG> --target grpc_cpp_plugin -- -j1)
 
 set_target_properties(
   grpc PROPERTIES
@@ -1851,7 +1851,7 @@ if (NOT WIN32)
       PATCH_COMMAND     ${LEVELDB_PATCH_CMD}
       CONFIGURE_COMMAND ${CMAKE_NOOP}
       BUILD_IN_SOURCE   1
-      BUILD_COMMAND     ${MAKE_PROGRAM} OPT=-O2\ -DNDEBUG\ -fPIC all
+      BUILD_COMMAND     ${MAKE_PROGRAM} -j1 OPT=-O2\ -DNDEBUG\ -fPIC all
       INSTALL_COMMAND   ${CMAKE_NOOP}
       URL               ${LEVELDB_URL}
       URL_HASH          ${LEVELDB_HASH})
