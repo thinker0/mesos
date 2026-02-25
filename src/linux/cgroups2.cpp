@@ -1231,6 +1231,7 @@ namespace devices {
 
 // Utility class to construct an eBPF program to whitelist or blacklist
 // select device accesses.
+#ifdef BPF_CGROUP_DEVICE
 class DeviceProgram
 {
 public:
@@ -1603,6 +1604,7 @@ private:
   static const int ALLOW_ACCESS = 1;
   static const int DENY_ACCESS = 0;
 };
+#endif // BPF_CGROUP_DEVICE
 
 
 Try<Nothing> configure(
@@ -1610,6 +1612,7 @@ Try<Nothing> configure(
     const vector<Entry>& allow,
     const vector<Entry>& deny)
 {
+#ifdef BPF_CGROUP_DEVICE
   if (!normalized(allow) || !normalized(deny)) {
     return Error(
         "Failed to validate arguments: allow or deny lists are not normalized");
@@ -1631,6 +1634,9 @@ Try<Nothing> configure(
   }
 
   return Nothing();
+#else
+  return Error("eBPF cgroup devices are not supported on this kernel");
+#endif
 }
 
 

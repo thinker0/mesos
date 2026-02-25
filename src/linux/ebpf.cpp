@@ -112,6 +112,7 @@ namespace cgroups2 {
 
 Try<int> bpf_get_fd_by_id(uint32_t prog_id)
 {
+#ifdef BPF_CGROUP_DEVICE
   bpf_attr attr;
   memset(&attr, 0, sizeof(attr));
   attr.prog_id = prog_id;
@@ -124,6 +125,9 @@ Try<int> bpf_get_fd_by_id(uint32_t prog_id)
   }
 
   return *fd;
+#else
+  return Error("eBPF cgroup devices are not supported on this kernel");
+#endif
 }
 
 
@@ -132,6 +136,7 @@ Try<int> bpf_get_fd_by_id(uint32_t prog_id)
 // it atomically with the provided ebpf program.
 Try<Nothing> attach(const string& cgroup, int new_program_fd)
 {
+#ifdef BPF_CGROUP_DEVICE
   string cgroup_path = ::cgroups2::path(cgroup);
 
   Try<int> cgroup_fd =
@@ -210,11 +215,15 @@ Try<Nothing> attach(const string& cgroup, int new_program_fd)
   }
 
   return Nothing();
+#else
+  return Error("eBPF cgroup devices are not supported on this kernel");
+#endif
 }
 
 
 Try<Nothing> attach(const string& cgroup, const Program& program)
 {
+#ifdef BPF_CGROUP_DEVICE
   Try<int> program_fd = ebpf::load(program);
   if (program_fd.isError()) {
     return Error("Failed to load eBPF program: " + program_fd.error());
@@ -227,11 +236,15 @@ Try<Nothing> attach(const string& cgroup, const Program& program)
   }
 
   return Nothing();
+#else
+  return Error("eBPF cgroup devices are not supported on this kernel");
+#endif
 }
 
 
 Try<vector<uint32_t>> attached(const string& cgroup)
 {
+#ifdef BPF_CGROUP_DEVICE
   string cgroup_path = ::cgroups2::path(cgroup);
 
   Try<int> cgroup_fd =
@@ -267,6 +280,9 @@ Try<vector<uint32_t>> attached(const string& cgroup)
   ids.resize(attr.query.prog_cnt);
 
   return ids;
+#else
+  return Error("eBPF cgroup devices are not supported on this kernel");
+#endif
 }
 
 
@@ -274,6 +290,7 @@ Try<vector<uint32_t>> attached(const string& cgroup)
 // and program id. Returns Nothing() on success or if no program is found.
 Try<Nothing> detach(const string& cgroup, uint32_t program_id)
 {
+#ifdef BPF_CGROUP_DEVICE
   string cgroup_path = ::cgroups2::path(cgroup);
 
   Try<int> cgroup_fd =
@@ -306,6 +323,9 @@ Try<Nothing> detach(const string& cgroup, uint32_t program_id)
   }
 
   return Nothing();
+#else
+  return Error("eBPF cgroup devices are not supported on this kernel");
+#endif
 }
 
 } // namespace cgroups2 {
