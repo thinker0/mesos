@@ -153,6 +153,12 @@ set(CPACK_PACKAGE_CONTACT "https://github.com/m3scluster/clusterd")
 set(CPACK_PACKAGE_MAINTAINER "AVENTER UG")
 set(CPACK_PACKAGE_VENDOR ${CPACK_PACKAGE_MAINTAINER})
 
+# RPM Specific configurations
+if(OS_DISTRIBUTION MATCHES "^centos7" OR OS_DISTRIBUTION MATCHES "^rocky")
+  # Since we disable AUTOREQ to ignore bundled .so files, we must specify system deps
+  set(CPACK_RPM_PACKAGE_REQUIRES "apr, cyrus-sasl-lib, libcurl, subversion-libs, zlib, epel-release")
+endif()
+
 # By default, all forms of binary packages are disabled.
 option(CPACK_BINARY_BUNDLE       "Enable to build OSX bundles"              OFF)
 option(CPACK_BINARY_DEB          "Enable to build Debian packages"          OFF)
