@@ -1576,9 +1576,11 @@ add_library(libaddress_sorting ${LIBRARY_LINKAGE} IMPORTED)
 add_dependencies(libaddress_sorting ${GRPC_TARGET})
 add_library(libgrpc_plugin_support ${LIBRARY_LINKAGE} IMPORTED)
 add_dependencies(libgrpc_plugin_support ${GRPC_TARGET})
+add_library(libcares STATIC IMPORTED)
+add_dependencies(libcares ${GRPC_TARGET})
 
 add_library(grpc INTERFACE)
-target_link_libraries(grpc INTERFACE libgrpc++ libgrpc libgpr)
+target_link_libraries(grpc INTERFACE libgrpc++ libgrpc libgpr libaddress_sorting libcares)
 
 # TODO(chhsiao): Move grpc so these don't have to be GLOBAL.
 add_executable(grpc_cpp_plugin IMPORTED GLOBAL)
@@ -1686,12 +1688,17 @@ else ()
     libaddress_sorting PROPERTIES
     IMPORTED_LOCATION ${GRPC_ROOT}-build/libaddress_sorting${LIBRARY_SUFFIX})
 
+  set_target_properties(
+    libcares PROPERTIES
+    IMPORTED_LOCATION ${GRPC_ROOT}-build/third_party/cares/cares/lib/libcares${CMAKE_STATIC_LIBRARY_SUFFIX})
+
 endif ()
 
 MAKE_INCLUDE_DIR(grpc)
 GET_BYPRODUCTS(libgpr)
 GET_BYPRODUCTS(libgrpc)
 GET_BYPRODUCTS(libgrpc++)
+GET_BYPRODUCTS(libaddress_sorting)
 GET_BYPRODUCTS(grpc_cpp_plugin)
 
 ExternalProject_Add(
@@ -1699,7 +1706,7 @@ ExternalProject_Add(
   DEPENDS          protobuf protoc zlib
   PREFIX           ${GRPC_CMAKE_ROOT}
   PATCH_COMMAND    ${GRPC_PATCH_CMD}
-  BUILD_BYPRODUCTS ${LIBGPR_BYPRODUCTS};${LIBGRPC_BYPRODUCTS};${LIBGRPC++_BYPRODUCTS};${GRPC_CPP_PLUGIN_BYPRODUCTS}
+  BUILD_BYPRODUCTS ${LIBGPR_BYPRODUCTS};${LIBGRPC_BYPRODUCTS};${LIBGRPC++_BYPRODUCTS};${LIBADDRESS_SORTING_BYPRODUCTS};${GRPC_CPP_PLUGIN_BYPRODUCTS}
   CMAKE_ARGS       ${GRPC_CMAKE_ARGS}
   BUILD_COMMAND    ${GRPC_BUILD_CMD}
   INSTALL_COMMAND  ${CMAKE_NOOP}
