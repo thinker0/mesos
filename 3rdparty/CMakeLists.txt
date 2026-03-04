@@ -1752,8 +1752,8 @@ add_dependencies(zookeeper ${ZOOKEEPER_TARGET})
 set(ZOOKEEPER_COMPILE_DEFINITIONS ZOOKEEPER_VERSION="${ZOOKEEPER_VERSION}" USE_STATIC_LIB)
 set_target_properties(
   zookeeper PROPERTIES
-  INTERFACE_INCLUDE_DIRECTORIES "${ZOOKEEPER_ROOT}/zookeeper-client/zookeeper-client-c/include;${ZOOKEEPER_ROOT}/zookeeper-client/zookeeper-client-c/generated"  
-  INTERFACE_LINK_LIBRARIES zk-hashtable
+  INTERFACE_INCLUDE_DIRECTORIES "${ZOOKEEPER_ROOT}/zookeeper-client/zookeeper-client-c/include;${ZOOKEEPER_ROOT}/zookeeper-client/zookeeper-client-c/generated"
+  INTERFACE_LINK_LIBRARIES "zk-hashtable;ssl;crypto"
   INTERFACE_COMPILE_DEFINITIONS "${ZOOKEEPER_COMPILE_DEFINITIONS}")
 
 set(ZOOKEEPER_CMAKE_FORWARD_ARGS ${CMAKE_CXX_FORWARD_ARGS} -DWANT_CPPUNIT=OFF)
