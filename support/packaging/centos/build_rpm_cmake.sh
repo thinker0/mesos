@@ -20,11 +20,13 @@ if [ "$CENTOS_VERSION" -eq 7 ]; then
 fi
 
 # Run CMake to configure the project for RPM packaging
+# BUILD_SHARED_LIBS=OFF forces static linking of 3rdparty libs (glog, grpc, protobuf, re2)
+# so the resulting RPM has no external .so dependencies for those libraries.
 cmake "${MESOS_DIR}" \
   -DCMAKE_BUILD_TYPE=Release \
   -DCPACK_BINARY_RPM=ON \
   -DCPACK_RPM_PACKAGE_AUTOREQ="no" \
-  -DUSE_STATIC_LIB=ON \
+  -DBUILD_SHARED_LIBS=OFF \
   -DCMAKE_INSTALL_PREFIX=/usr
 
 # Build the project

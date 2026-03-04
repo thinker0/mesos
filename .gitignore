@@ -82,3 +82,10 @@ missing
 build/**/*
 .pre-commit-config.yaml
 build-nix/**/*
+*.class
+*.log
+3rdparty/
+cmake-build-*/
+CMakeFiles/
+bin/
+build_centos9/
