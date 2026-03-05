@@ -58,10 +58,11 @@ function main {
   err "Please use \`master' or \`agent'."
 }
 
-# Search supplied directory for files that do not end with .dkpg-dist or .rpmnew
+# Search supplied directory for files that do not end with .dpkg-dist or .rpmnew
 function find_files {
-    find "$1" -maxdepth 1 -name '*.dpkg-dist' -o -name '*.rpmnew' -prune \
-         -o \( -type f -print \)
+    [[ -d "$1" ]] || return 0
+    find "$1" -maxdepth 1 \( -name '*.dpkg-dist' -o -name '*.rpmnew' \) -prune \
+         -o -type f -print
 }
 
 function agent {
