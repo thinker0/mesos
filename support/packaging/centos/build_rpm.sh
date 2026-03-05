@@ -12,7 +12,15 @@ pushd "${MESOS_DIR}"
 export HOME="${PWD}/centos${CENTOS_VERSION}"
 mkdir -p "$HOME/rpmbuild/BUILD" "$HOME/rpmbuild/RPMS" "$HOME/rpmbuild/SOURCES" "$HOME/rpmbuild/SPECS" "$HOME/rpmbuild/SRPMS"
 
-cp ${PACKAGING_DIR}/common/* $HOME/rpmbuild/SOURCES
+for f in ${PACKAGING_DIR}/common/*; do
+  fname=$(basename "$f")
+  if [[ "$fname" == *.in ]]; then
+    dest="${fname%.in}"
+    sed "s|@RUN_PATH@|/usr|g" "$f" > "$HOME/rpmbuild/SOURCES/$dest"
+  else
+    cp "$f" "$HOME/rpmbuild/SOURCES/"
+  fi
+done
 cp ${PACKAGING_DIR}/centos/mesos.spec $HOME/rpmbuild/SPECS
 
 if [ "$CENTOS_VERSION" = "6" ]; then

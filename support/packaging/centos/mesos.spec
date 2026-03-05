@@ -14,16 +14,16 @@ Source0:       %{name}-%{version}.tar.gz
 Source1:       mesos-init-wrapper
 Source2:       %{name}
 Source3:       %{name}-master
-Source4:       %{name}-slave
+Source4:       %{name}-agent
 
 %if 0%{?el6}
 Source5:       %{name}-master.upstart
-Source6:       %{name}-slave.upstart
+Source6:       %{name}-agent.upstart
 %endif
 
 %if 0%{?el7}
 Source5:       %{name}-master.service
-Source6:       %{name}-slave.service
+Source6:       %{name}-agent.service
 %endif
 
 %if 0%{?el9} || 0%{?rhel} >= 8
@@ -114,13 +114,15 @@ This package provides files for developing Mesos frameworks/modules.
 mkdir -p -m0755 %{buildroot}%{_sysconfdir}/default
 mkdir -p -m0755 %{buildroot}%{_sysconfdir}/%{name}
 mkdir -p -m0755 %{buildroot}%{_sysconfdir}/%{name}-master
-mkdir -p -m0755 %{buildroot}%{_sysconfdir}/%{name}-slave
+mkdir -p -m0755 %{buildroot}%{_sysconfdir}/%{name}-agent
+mkdir -p -m0755 %{buildroot}%{_sysconfdir}/%{name}-agent/attributes
+mkdir -p -m0755 %{buildroot}%{_sysconfdir}/%{name}-agent/resources
 mkdir -p -m0755 %{buildroot}/%{_var}/log/%{name}
 mkdir -p -m0755 %{buildroot}/%{_var}/lib/%{name}
 
 echo zk://localhost:2181/mesos > %{buildroot}%{_sysconfdir}/mesos/zk
 echo %{_var}/lib/%{name}       > %{buildroot}%{_sysconfdir}/mesos-master/work_dir
-echo %{_var}/lib/%{name}       > %{buildroot}%{_sysconfdir}/mesos-slave/work_dir
+echo %{_var}/lib/%{name}       > %{buildroot}%{_sysconfdir}/mesos-agent/work_dir
 echo 1                         > %{buildroot}%{_sysconfdir}/mesos-master/quorum
 
 install -m 0755 %{SOURCE1} %{buildroot}%{_bindir}/
@@ -129,7 +131,7 @@ install -m 0644 %{SOURCE2} %{SOURCE3} %{SOURCE4} %{buildroot}%{_sysconfdir}/defa
 %if 0%{?el6}
 mkdir -p -m0755 %{buildroot}%{_sysconfdir}/init
 install -m 0644 %{SOURCE5} %{buildroot}%{_sysconfdir}/init/mesos-master.conf
-install -m 0644 %{SOURCE6} %{buildroot}%{_sysconfdir}/init/mesos-slave.conf
+install -m 0644 %{SOURCE6} %{buildroot}%{_sysconfdir}/init/mesos-agent.conf
 %endif
 
 %if 0%{?el7}
@@ -187,7 +189,7 @@ install -m 0644 src/java/target/mesos-*.jar %{buildroot}%{_datadir}/java/
 %post
 /sbin/ldconfig
 %if 0%{?el7}
-%systemd_post %{name}-slave.service %{name}-master.service
+%systemd_post %{name}-agent.service %{name}-master.service
 %endif
 
 %preun
