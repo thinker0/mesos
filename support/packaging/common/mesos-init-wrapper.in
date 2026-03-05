@@ -66,7 +66,7 @@ function find_files {
 }
 
 function agent {
-  local etc_agent=/etc/mesos-agent
+  local etc_agent=/etc/mesos-agent/
   local args=()
   local attributes=()
   local resources=()
@@ -126,7 +126,7 @@ function agent {
 }
 
 function master {
-  local etc_master=/etc/mesos-master
+  local etc_master=/etc/mesos-master/
   local args=()
   # Call mesosphere-dnsconfig if present on the system to generate config files.
   [ -x /usr/bin/mesosphere-dnsconfig ] && mesosphere-dnsconfig -write -service=mesos-master
