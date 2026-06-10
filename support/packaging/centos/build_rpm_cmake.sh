@@ -10,6 +10,7 @@ export PACKAGING_DIR=$(readlink -e "$(dirname "$(dirname "$0")")")
 export MESOS_DIR=$(readlink -e $PACKAGING_DIR/../../)
 
 export BUILD_DIR="/tmp/mesos_build_centos${CENTOS_VERSION}"
+export MAVEN_OPTS="-Dmaven.repo.local=${BUILD_DIR}/.m2/repository"
 
 echo "Building Mesos using CMake in ${BUILD_DIR}..."
 mkdir -p "${BUILD_DIR}"
@@ -17,6 +18,11 @@ cd "${BUILD_DIR}"
 
 if [ "$CENTOS_VERSION" -eq 7 ]; then
   source /opt/rh/devtoolset-7/enable
+fi
+
+if [ "$CENTOS_VERSION" -eq 9 ]; then
+  export JAVA_HOME="/usr/lib/jvm/java-1.8.0-openjdk"
+  export PATH="${JAVA_HOME}/bin:${PATH}"
 fi
 
 # Run CMake to configure the project for RPM packaging
@@ -27,10 +33,11 @@ cmake "${MESOS_DIR}" \
   -DCPACK_BINARY_RPM=ON \
   -DCPACK_RPM_PACKAGE_AUTOREQ="no" \
   -DBUILD_SHARED_LIBS=OFF \
+  -DENABLE_JAVA=ON \
   -DCMAKE_INSTALL_PREFIX=/usr
 
 # Build the project
-cmake --build . --parallel 4
+cmake --build . --parallel 2
 
 # Generate the RPM using CPack
 cpack -G RPM
