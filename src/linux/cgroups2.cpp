@@ -1011,6 +1011,15 @@ public:
       return Failure("Already listening");
     }
 
+    uint64_t initial_oom_count = 0;
+    Try<string> content = os::read(events_path);
+    if (!content.isError()) {
+      Try<Events> events = events::parse(strings::trim(*content));
+      if (!events.isError()) {
+        initial_oom_count = events->oom;
+      }
+    }
+
     Try<Nothing> add = watcher.add(events_path);
     if (add.isError()) {
       return Failure("Failed to add file to watcher: " + add.error());
@@ -1020,6 +1029,7 @@ public:
     Future<Nothing> future = promise.future();
 
     ooms.emplace(events_path, std::move(promise));
+    initial_ooms.emplace(events_path, initial_oom_count);
 
     future
       .onDiscard(defer(self(), [this, events_path]() {
@@ -1030,6 +1040,7 @@ public:
 
         Promise<Nothing> promise = std::move(it->second);
         ooms.erase(events_path);
+        initial_ooms.erase(events_path);
 
         // Ignoring remove failures since caller doesn't care about the file
         // anyway now.
@@ -1055,6 +1066,7 @@ public:
     if (content.isError()) {
       it->second.fail("Failed to read 'memory.events': " + content.error());
       ooms.erase(it);
+      initial_ooms.erase(path);
       return;
     }
 
@@ -1062,12 +1074,19 @@ public:
     if (events.isError()) {
       it->second.fail("Failed to parse 'memory.events': " + events.error());
       ooms.erase(it);
+      initial_ooms.erase(path);
       return;
     }
 
-    if (events->oom > 0) {
+    auto initial_it = initial_ooms.find(path);
+    uint64_t initial_oom_count = (initial_it != initial_ooms.end())
+      ? initial_it->second
+      : 0;
+
+    if (events->oom > initial_oom_count) {
       it->second.set(Nothing());
       ooms.erase(it);
+      initial_ooms.erase(path);
       return;
     }
   }
@@ -1078,11 +1097,15 @@ public:
       promise.fail(reason);
     }
     ooms.clear();
+    initial_ooms.clear();
   }
 
 private:
   // A map of cgroup memory.event file names to their respective futures.
   hashmap<string, Promise<Nothing>> ooms;
+
+  // A map of cgroup memory.event file names to their initial oom count.
+  hashmap<string, uint64_t> initial_ooms;
 
   Future<Nothing> event_loop;
 
