@@ -20,7 +20,10 @@
 #ifndef __EBPF_HPP__
 #define __EBPF_HPP__
 
-#include <linux/bpf.h>
+// Pulls in <linux/bpf.h> plus vendored fallbacks for the BPF cgroup-device
+// interface so that this code compiles against older kernel UAPI headers
+// (e.g. RHEL/CentOS 7) that predate it.
+#include "linux/bpf_compat.hpp"
 
 #include <string>
 #include <vector>
@@ -37,13 +40,15 @@ Try<int, ErrnoError> bpf(int cmd, bpf_attr* attr, size_t size);
 class Program
 {
 public:
-  explicit Program(bpf_prog_type type);
+  explicit Program(__u32 type);
 
   // Append instructions to the end of the eBPF program.
   void append(std::vector<bpf_insn>&& instructions);
 
-  // Type of eBPF program.
-  const bpf_prog_type type;
+  // Type of eBPF program (a bpf_prog_type value). Stored as __u32 so the code
+  // does not depend on the kernel UAPI headers declaring the specific program
+  // type enumerator (see linux/bpf_compat.hpp).
+  const __u32 type;
 
   // Instructions of the eBPF program.
   std::vector<bpf_insn> program;
