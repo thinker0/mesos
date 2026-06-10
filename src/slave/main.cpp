@@ -206,7 +206,6 @@ static Try<Nothing> logProcesses(const string& cgroup)
 static Try<Nothing> initializeCgroups2(const slave::Flags& flags)
 {
   namespace containerizer = mesos::internal::slave::containerizer;
-  CHECK_SOME(flags.agent_subsystems);
 
   if (!cgroups2::enabled()) {
     return Error("cgroups v2 is not available on this system");
@@ -270,16 +269,18 @@ static Try<Nothing> initializeCgroups2(const slave::Flags& flags)
                  + availableControllers.error());
   }
 
-  const vector<string> requestedControllers = strings::tokenize(
-      *flags.agent_subsystems, ",");
-
   set<string> requestedControllersSet;
-  foreach (const string& controller, requestedControllers) {
-    if (controller != slave::CONTAINER_EXEC_AGENT_SUBSYSTEM) {
-      requestedControllersSet.insert(controller);
+  if (flags.agent_subsystems.isSome()) {
+    const vector<string> requestedControllers = strings::tokenize(
+        *flags.agent_subsystems, ",");
+    foreach (const string& controller, requestedControllers) {
+      if (controller != slave::CONTAINER_EXEC_AGENT_SUBSYSTEM) {
+        requestedControllersSet.insert(controller);
+      }
     }
+  } else {
+    requestedControllersSet = availableControllers.get();
   }
-
 
   Try<Nothing> enable = cgroups2::controllers::enable(
       cgroups2::ROOT_CGROUP, requestedControllersSet);
@@ -574,34 +575,32 @@ int main(int argc, char** argv)
   }
 
 #ifdef __linux__
-  if (flags.agent_subsystems.isSome()) {
-    // Use the cgroups v2 isolator if it is supported. Otherwise, use
-    // the cgroups v1 isolator.
-    [&flags] () {
-      Try<bool> mounted = cgroups2::mounted();
-      if (mounted.isError()) {
-        EXIT(EXIT_FAILURE) << mounted.error();
-      }
+  [&flags] () {
+    Try<bool> mounted = cgroups2::mounted();
+    if (mounted.isError()) {
+      EXIT(EXIT_FAILURE) << mounted.error();
+    }
 
-      // To use cgroups v2, the host must have a cgroup2 filesystem mounted
-      // at `/sys/fs/cgroup`.
-      if (*mounted) {
-        Try<Nothing> initialize = initializeCgroups2(flags);
-        if (initialize.isError()) {
-          EXIT(EXIT_FAILURE) << initialize.error();
-        }
-        return;
+    // To use cgroups v2, the host must have a cgroup2 filesystem mounted
+    // at `/sys/fs/cgroup`.
+    if (*mounted) {
+      Try<Nothing> initialize = initializeCgroups2(flags);
+      if (initialize.isError()) {
+        EXIT(EXIT_FAILURE) << initialize.error();
       }
+      return;
+    }
 
-      // Initialize a cgroups hierarchy for each of the controllers that
-      // are requested, create the root Mesos Agent's cgroup, and move the
-      // agent processes into the new cgroup.
+    // Initialize a cgroups hierarchy for each of the controllers that
+    // are requested, create the root Mesos Agent's cgroup, and move the
+    // agent processes into the new cgroup.
+    if (flags.agent_subsystems.isSome()) {
       Try<Nothing> initialize = initializeCgroups(flags);
       if (initialize.isError()) {
         EXIT(EXIT_FAILURE) << initialize.error();
       }
-    }();
-  }
+    }
+  }();
 #endif // __linux__
 
   const string id = process::ID::generate("slave"); // Process ID.
