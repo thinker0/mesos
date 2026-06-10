@@ -76,6 +76,10 @@ namespace mesos {
 // NOTE: Returning an Error implies the child process will be killed.
 Try<Nothing> extendLifetime(pid_t child)
 {
+  if (cgroups::cgroupsv2()) {
+    return Nothing();
+  }
+
   if (!systemd::exists()) {
     return Error("Failed to contain process on systemd: "
                  "systemd does not exist on this system");
@@ -276,6 +280,9 @@ Path runtimeDirectory()
 
 Path hierarchy()
 {
+  if (cgroups::cgroupsv2()) {
+    return Path(flags().cgroups_hierarchy);
+  }
   return Path(path::join(flags().cgroups_hierarchy, "systemd"));
 }
 
