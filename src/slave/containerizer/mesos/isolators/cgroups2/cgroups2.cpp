@@ -91,6 +91,7 @@ Try<Isolator*> Cgroups2IsolatorProcess::create(
     {"mem", &MemoryControllerProcess::create},
     {"perf_event", &PerfEventControllerProcess::create},
     {"io", &IoControllerProcess::create},
+    {"blkio", &IoControllerProcess::create},
     {"hugetlb", &HugetlbControllerProcess::create},
     {"cpuset", &CpusetControllerProcess::create},
     {"pids", &PidsControllerProcess::create}
