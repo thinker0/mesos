@@ -57,7 +57,7 @@ Try<int, ErrnoError> bpf(int cmd, bpf_attr* attr, size_t size)
 }
 
 
-Program::Program(bpf_prog_type _type) : type(_type) {}
+Program::Program(__u32 _type) : type(_type) {}
 
 
 void Program::append(vector<bpf_insn>&& instructions)
@@ -112,7 +112,6 @@ namespace cgroups2 {
 
 Try<int> bpf_get_fd_by_id(uint32_t prog_id)
 {
-#ifdef BPF_CGROUP_DEVICE
   bpf_attr attr;
   memset(&attr, 0, sizeof(attr));
   attr.prog_id = prog_id;
@@ -125,9 +124,6 @@ Try<int> bpf_get_fd_by_id(uint32_t prog_id)
   }
 
   return *fd;
-#else
-  return Error("eBPF cgroup devices are not supported on this kernel");
-#endif
 }
 
 
@@ -136,7 +132,6 @@ Try<int> bpf_get_fd_by_id(uint32_t prog_id)
 // it atomically with the provided ebpf program.
 Try<Nothing> attach(const string& cgroup, int new_program_fd)
 {
-#ifdef BPF_CGROUP_DEVICE
   string cgroup_path = ::cgroups2::path(cgroup);
 
   Try<int> cgroup_fd =
@@ -165,9 +160,9 @@ Try<Nothing> attach(const string& cgroup, int new_program_fd)
     }
   }
 
-  bpf_attr attr;
+  ebpf::cgroup_device::AttachAttr attr;
   memset(&attr, 0, sizeof(attr));
-  attr.attach_type = BPF_CGROUP_DEVICE;
+  attr.attach_type = ebpf::cgroup_device::ATTACH_TYPE;
   attr.target_fd = *cgroup_fd;
   attr.attach_bpf_fd = new_program_fd;
 
@@ -196,13 +191,17 @@ Try<Nothing> attach(const string& cgroup, int new_program_fd)
   // for device access.
   // For full details, see:
   // https://elixir.bootlin.com/linux/v6.7.9/source/include/uapi/linux/bpf.h#L1090
-  attr.attach_flags = BPF_F_ALLOW_MULTI;
+  attr.attach_flags = ebpf::cgroup_device::F_ALLOW_MULTI;
   if (old_program_fd.isSome()) {
-    attr.attach_flags |= BPF_F_REPLACE;
+    // Atomically replace the existing program (BPF_F_REPLACE, Linux >= 5.0) so
+    // that exactly one cgroup-device program stays attached, with no window
+    // during which device access is left unrestricted.
+    attr.attach_flags |= ebpf::cgroup_device::F_REPLACE;
     attr.replace_bpf_fd = *old_program_fd;
   }
 
-  Try<int, ErrnoError> result = bpf(BPF_PROG_ATTACH, &attr, sizeof(attr));
+  Try<int, ErrnoError> result =
+    bpf(BPF_PROG_ATTACH, reinterpret_cast<bpf_attr*>(&attr), sizeof(attr));
 
   os::close(*cgroup_fd);
   if (old_program_fd.isSome()) {
@@ -215,15 +214,11 @@ Try<Nothing> attach(const string& cgroup, int new_program_fd)
   }
 
   return Nothing();
-#else
-  return Error("eBPF cgroup devices are not supported on this kernel");
-#endif
 }
 
 
 Try<Nothing> attach(const string& cgroup, const Program& program)
 {
-#ifdef BPF_CGROUP_DEVICE
   Try<int> program_fd = ebpf::load(program);
   if (program_fd.isError()) {
     return Error("Failed to load eBPF program: " + program_fd.error());
@@ -236,15 +231,11 @@ Try<Nothing> attach(const string& cgroup, const Program& program)
   }
 
   return Nothing();
-#else
-  return Error("eBPF cgroup devices are not supported on this kernel");
-#endif
 }
 
 
 Try<vector<uint32_t>> attached(const string& cgroup)
 {
-#ifdef BPF_CGROUP_DEVICE
   string cgroup_path = ::cgroups2::path(cgroup);
 
   Try<int> cgroup_fd =
@@ -262,7 +253,7 @@ Try<vector<uint32_t>> attached(const string& cgroup)
   bpf_attr attr;
   memset(&attr, 0, sizeof(attr));
   attr.query.target_fd = *cgroup_fd;
-  attr.query.attach_type = BPF_CGROUP_DEVICE;
+  attr.query.attach_type = ebpf::cgroup_device::ATTACH_TYPE;
   attr.query.prog_cnt = MAX_IDS;
   attr.query.prog_ids = reinterpret_cast<uint64_t>(ids.data());
 
@@ -280,9 +271,6 @@ Try<vector<uint32_t>> attached(const string& cgroup)
   ids.resize(attr.query.prog_cnt);
 
   return ids;
-#else
-  return Error("eBPF cgroup devices are not supported on this kernel");
-#endif
 }
 
 
@@ -290,7 +278,6 @@ Try<vector<uint32_t>> attached(const string& cgroup)
 // and program id. Returns Nothing() on success or if no program is found.
 Try<Nothing> detach(const string& cgroup, uint32_t program_id)
 {
-#ifdef BPF_CGROUP_DEVICE
   string cgroup_path = ::cgroups2::path(cgroup);
 
   Try<int> cgroup_fd =
@@ -308,7 +295,7 @@ Try<Nothing> detach(const string& cgroup, uint32_t program_id)
 
   bpf_attr attr;
   memset(&attr, 0, sizeof(attr));
-  attr.attach_type = BPF_CGROUP_DEVICE;
+  attr.attach_type = ebpf::cgroup_device::ATTACH_TYPE;
   attr.target_fd = *cgroup_fd;
   attr.attach_bpf_fd = *program_fd;
 
@@ -323,9 +310,6 @@ Try<Nothing> detach(const string& cgroup, uint32_t program_id)
   }
 
   return Nothing();
-#else
-  return Error("eBPF cgroup devices are not supported on this kernel");
-#endif
 }
 
 } // namespace cgroups2 {

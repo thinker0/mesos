@@ -927,7 +927,7 @@ TEST_F(Cgroups2Test, ROOT_CGROUPS2_GetBpfFdById)
 
   bpf_attr attr;
   memset(&attr, 0, sizeof(attr));
-  attr.attach_type = BPF_CGROUP_DEVICE;
+  attr.attach_type = ebpf::cgroup_device::ATTACH_TYPE;
   attr.target_fd = *cgroup_fd;
   attr.attach_bpf_fd = *program_fd;
 

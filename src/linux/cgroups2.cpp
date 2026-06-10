@@ -1231,7 +1231,6 @@ namespace devices {
 
 // Utility class to construct an eBPF program to whitelist or blacklist
 // select device accesses.
-#ifdef BPF_CGROUP_DEVICE
 class DeviceProgram
 {
 public:
@@ -1321,22 +1320,22 @@ public:
     //
     // The device type is encoded in the first 16 bits of `access_type` and
     // the access type is encoded in the last 16 bits of `access_type`.
-    ebpf::Program program = ebpf::Program(BPF_PROG_TYPE_CGROUP_DEVICE);
+    ebpf::Program program = ebpf::Program(ebpf::cgroup_device::PROG_TYPE);
     program.append({
       // r2: Type ('c', 'b', '?')
       BPF_LDX_MEM(
-        BPF_W, BPF_REG_2, BPF_REG_1, offsetof(bpf_cgroup_dev_ctx, access_type)),
+        BPF_W, BPF_REG_2, BPF_REG_1, offsetof(ebpf::cgroup_device::Context, access_type)),
       BPF_ALU32_IMM(BPF_AND, BPF_REG_2, 0xFFFF),
       // r3: Access ('r', 'w', 'm')
       BPF_LDX_MEM(BPF_W, BPF_REG_3, BPF_REG_1,
-        offsetof(bpf_cgroup_dev_ctx, access_type)),
+        offsetof(ebpf::cgroup_device::Context, access_type)),
       BPF_ALU32_IMM(BPF_RSH, BPF_REG_3, 16),
       // r4: Major Version
       BPF_LDX_MEM(BPF_W, BPF_REG_4, BPF_REG_1,
-        offsetof(bpf_cgroup_dev_ctx, major)),
+        offsetof(ebpf::cgroup_device::Context, major)),
       // r5: Minor Version
       BPF_LDX_MEM(BPF_W, BPF_REG_5, BPF_REG_1,
-        offsetof(bpf_cgroup_dev_ctx, minor)),
+        offsetof(ebpf::cgroup_device::Context, minor)),
     });
 
     // Initialize result register R0 to deny access so we can immediately
@@ -1482,9 +1481,9 @@ private:
       [](short jmp_size, const Entry::Access& access)
     {
       int bpf_access = 0;
-      bpf_access |= access.read ? BPF_DEVCG_ACC_READ : 0;
-      bpf_access |= access.write ? BPF_DEVCG_ACC_WRITE : 0;
-      bpf_access |= access.mknod ? BPF_DEVCG_ACC_MKNOD : 0;
+      bpf_access |= access.read ? ebpf::cgroup_device::ACC_READ : 0;
+      bpf_access |= access.write ? ebpf::cgroup_device::ACC_WRITE : 0;
+      bpf_access |= access.mknod ? ebpf::cgroup_device::ACC_MKNOD : 0;
       return vector<bpf_insn>({
           BPF_MOV32_REG(BPF_REG_1, BPF_REG_3),
           BPF_ALU32_IMM(BPF_AND, BPF_REG_1, bpf_access),
@@ -1500,9 +1499,9 @@ private:
       [](short jmp_size, const Entry::Access& access)
     {
       int bpf_access = 0;
-      bpf_access |= access.read ? BPF_DEVCG_ACC_READ : 0;
-      bpf_access |= access.write ? BPF_DEVCG_ACC_WRITE : 0;
-      bpf_access |= access.mknod ? BPF_DEVCG_ACC_MKNOD : 0;
+      bpf_access |= access.read ? ebpf::cgroup_device::ACC_READ : 0;
+      bpf_access |= access.write ? ebpf::cgroup_device::ACC_WRITE : 0;
+      bpf_access |= access.mknod ? ebpf::cgroup_device::ACC_MKNOD : 0;
       return vector<bpf_insn>({
           BPF_MOV32_REG(BPF_REG_1, BPF_REG_3),
           BPF_ALU32_IMM(BPF_AND, BPF_REG_1, bpf_access),
@@ -1518,8 +1517,8 @@ private:
       [](short jmp_size, const Entry::Selector& selector) -> vector<bpf_insn> {
       int bpf_type = [selector]() {
         switch (selector.type) {
-          case Entry::Selector::Type::BLOCK:     return BPF_DEVCG_DEV_BLOCK;
-          case Entry::Selector::Type::CHARACTER: return BPF_DEVCG_DEV_CHAR;
+          case Entry::Selector::Type::BLOCK:     return ebpf::cgroup_device::DEV_BLOCK;
+          case Entry::Selector::Type::CHARACTER: return ebpf::cgroup_device::DEV_CHAR;
           case Entry::Selector::Type::ALL:       break;
         }
         UNREACHABLE();
@@ -1604,7 +1603,6 @@ private:
   static const int ALLOW_ACCESS = 1;
   static const int DENY_ACCESS = 0;
 };
-#endif // BPF_CGROUP_DEVICE
 
 
 Try<Nothing> configure(
@@ -1612,7 +1610,6 @@ Try<Nothing> configure(
     const vector<Entry>& allow,
     const vector<Entry>& deny)
 {
-#ifdef BPF_CGROUP_DEVICE
   if (!normalized(allow) || !normalized(deny)) {
     return Error(
         "Failed to validate arguments: allow or deny lists are not normalized");
@@ -1634,9 +1631,6 @@ Try<Nothing> configure(
   }
 
   return Nothing();
-#else
-  return Error("eBPF cgroup devices are not supported on this kernel");
-#endif
 }
 
 
