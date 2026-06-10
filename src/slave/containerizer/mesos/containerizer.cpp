@@ -453,6 +453,7 @@ Try<MesosContainerizer*> MesosContainerizer::create(
 #ifdef __linux__
     {"cgroups/all", cgroupsIsolatorSelector},
     {"cgroups/blkio", cgroupsIsolatorSelector},
+    {"cgroups/io", cgroupsIsolatorSelector},
     {"cgroups/cpu", cgroupsIsolatorSelector},
     {"cgroups/cpuset", cgroupsIsolatorSelector},
     {"cgroups/devices", cgroupsIsolatorSelector},

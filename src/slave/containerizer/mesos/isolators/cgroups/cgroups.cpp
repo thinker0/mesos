@@ -84,6 +84,7 @@ Try<Isolator*> CgroupsIsolatorProcess::create(const Flags& flags)
   // Multimap: isolator name -> subsystem name.
   multihashmap<string, string> isolatorMap = {
     {"blkio", CGROUP_SUBSYSTEM_BLKIO_NAME},
+    {"io", CGROUP_SUBSYSTEM_BLKIO_NAME},
     {"cpu", CGROUP_SUBSYSTEM_CPU_NAME},
     {"cpu", CGROUP_SUBSYSTEM_CPUACCT_NAME},
     {"cpuset", CGROUP_SUBSYSTEM_CPUSET_NAME},
