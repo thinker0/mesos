@@ -24,7 +24,9 @@ execute_process(
   OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 set(POSSIBLE_APR_INCLUDE_DIRS
+  ${APR_PREFIX}/include/apr-1
   ${APR_PREFIX}/libexec/include/apr-1
+  /opt/homebrew/opt/apr/include/apr-1
   /usr/local/include/apr-1
   /usr/local/include/apr-1.0
   /usr/local/apr/include/apr-1
@@ -32,7 +34,9 @@ set(POSSIBLE_APR_INCLUDE_DIRS
   /usr/include/apr-1.0)
 
 set(POSSIBLE_APR_LIB_DIRS
+  ${APR_PREFIX}/lib
   ${APR_PREFIX}/libexec/lib
+  /opt/homebrew/opt/apr/lib
   /usr/local/apr/lib
   /usr/local/lib
   /usr/lib)

@@ -708,6 +708,10 @@ if (ENABLE_INSTALL_MODULE_DEPENDENCIES)
     DESTINATION .)
 endif ()
 
+if (ENABLE_NEW_CLI)
+  add_subdirectory(python/cli_new)
+endif ()
+
 # BUILD THE MESOS TESTS.
 ########################
 add_subdirectory(tests)

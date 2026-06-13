@@ -23,6 +23,15 @@ else ()
 endif ()
 
 project(mesos)
+
+if(APPLE AND
+   (CMAKE_HOST_SYSTEM_PROCESSOR STREQUAL "arm64" OR
+    CMAKE_SYSTEM_PROCESSOR STREQUAL "arm64" OR
+    CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64"))
+  set(CMAKE_OSX_ARCHITECTURES "arm64" CACHE STRING
+      "Build architecture for Apple Silicon hosts" FORCE)
+endif()
+
 set(MESOS_MAJOR_VERSION 1)
 set(MESOS_MINOR_VERSION 12)
 set(MESOS_PATCH_VERSION 0)
@@ -62,18 +71,27 @@ endif ()
 # PACKAGING.
 ############
 
-file(STRINGS "/etc/os-release" OS_RELEASE)
-foreach(line ${OS_RELEASE})
-  if(line MATCHES "^ID=")
-    string(REPLACE "ID=" "" DISTRO ${line})
-    string(REPLACE "\"" "" DISTRO ${DISTRO})
-    string(STRIP ${DISTRO} DISTRO)
-  elseif(line MATCHES "^VERSION_ID=")
-    string(REPLACE "VERSION_ID=" "" VERSION ${line})
-    string(STRIP ${VERSION} VERSION)
-    string(REGEX REPLACE "[^a-zA-Z0-9]" "" VERSION ${VERSION})
-  endif()
-endforeach()
+set(DISTRO "unknown")
+set(VERSION "")
+
+if(EXISTS "/etc/os-release")
+  file(STRINGS "/etc/os-release" OS_RELEASE)
+  foreach(line ${OS_RELEASE})
+    if(line MATCHES "^ID=")
+      string(REPLACE "ID=" "" DISTRO ${line})
+      string(REPLACE "\"" "" DISTRO ${DISTRO})
+      string(STRIP ${DISTRO} DISTRO)
+    elseif(line MATCHES "^VERSION_ID=")
+      string(REPLACE "VERSION_ID=" "" VERSION ${line})
+      string(STRIP ${VERSION} VERSION)
+      string(REGEX REPLACE "[^a-zA-Z0-9]" "" VERSION ${VERSION})
+    endif()
+  endforeach()
+elseif(APPLE)
+  set(DISTRO "macos")
+  set(VERSION "${CMAKE_SYSTEM_VERSION}")
+  string(REGEX REPLACE "[^a-zA-Z0-9]" "" VERSION ${VERSION})
+endif()
 
 if(CMAKE_SYSTEM_PROCESSOR STREQUAL "unknown")
   execute_process(
@@ -110,7 +128,11 @@ elseif(OS_DISTRIBUTION STREQUAL "ubuntu2404")
   set(CPACK_DEBIAN_PACKAGE_DEPENDS "libapr1,libsvn-dev,libevent-openssl-2.1-7t64,libevent-pthreads-2.1-7t64")
 endif()
 
-set(CPACK_PACKAGE_VERSION ${PACKAGE_VERSION}-${MESOS_SUB_VERSION}.${OS_DISTRIBUTION})
+if(OS_DISTRIBUTION)
+  set(CPACK_PACKAGE_VERSION ${PACKAGE_VERSION}-${MESOS_SUB_VERSION}.${OS_DISTRIBUTION})
+else()
+  set(CPACK_PACKAGE_VERSION ${PACKAGE_VERSION}-${MESOS_SUB_VERSION})
+endif()
 set(CPACK_PACKAGE_VERSION_MAJOR ${MESOS_MAJOR_VERSION})
 set(CPACK_PACKAGE_VERSION_MINOR ${MESOS_MINOR_VERSION})
 set(CPACK_PACKAGE_VERSION_PATCH ${MESOS_PATCH_VERSION})

@@ -88,4 +88,9 @@ build-nix/**/*
 cmake-build-*/
 CMakeFiles/
 bin/
-build_centos9/
+build*/
+support/packaging/centos/upload-rpms.sh
+
+# Legacy docs/sites
+docs/
+site/

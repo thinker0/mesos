@@ -26,6 +26,18 @@ target_link_libraries(mesos-execute PRIVATE mesos)
 add_executable(mesos-resolve resolve.cpp)
 target_link_libraries(mesos-resolve PRIVATE mesos)
 
+# MESOS CLI DISPATCHER.
+# Main executable used to dispatch commands.
+############################################
+add_executable(mesos-cli mesos.cpp)
+set_target_properties(mesos-cli PROPERTIES OUTPUT_NAME mesos)
+target_link_libraries(mesos-cli PRIVATE mesos)
+
 install(
-  TARGETS mesos-execute mesos-resolve
+  TARGETS mesos-cli mesos-execute mesos-resolve
   RUNTIME DESTINATION ${MESOS_INSTALL_RUNTIME})
+
+# Install Python scripts
+install(
+  PROGRAMS mesos-cat mesos-ps mesos-scp mesos-tail
+  DESTINATION ${MESOS_INSTALL_RUNTIME})
