@@ -20,8 +20,8 @@ RUN dnf install -y --allowerasing \
       cmake
 
 # Setup JDK
-RUN dnf install -y java-11-openjdk-devel && \
-    echo 'export JAVA_HOME=/usr/lib/jvm/java-11-openjdk' >> /etc/profile.d/java-home.sh
+RUN dnf install -y java-1.8.0-openjdk-devel && \
+    echo 'export JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk' >> /etc/profile.d/java-home.sh
 
 ADD mesos.spec /mesos.spec
 

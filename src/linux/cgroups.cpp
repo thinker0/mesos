@@ -466,7 +466,7 @@ Try<set<string>> hierarchies()
 
   set<string> results;
   foreach (const fs::MountTable::Entry& entry, table->entries) {
-    if (entry.type == "cgroup") {
+    if (entry.type == "cgroup" || entry.type == "cgroup2") {
       Result<string> realpath = os::realpath(entry.dir);
       if (!realpath.isSome()) {
         return Error(
