@@ -11,6 +11,24 @@ index fc4924fc7d..ed9b845581 100644
  deps_codegen_test_minimal: $(CODEGEN_TEST_MINIMAL_OBJS:.o=.dep)
  
  ifneq ($(NO_SECURE),true)
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 200f2ad636..35b6ad58f4 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -91,7 +91,12 @@ endif()
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
+ 
+-add_definitions(-DPB_FIELD_16BIT)
++if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(arm64|aarch64)$")
++  # Avoid unaligned nanopb descriptor data on arm64.
++  add_definitions(-DPB_FIELD_32BIT -DPB_NO_PACKED_STRUCTS)
++else()
++  add_definitions(-DPB_FIELD_16BIT)
++endif()
+ 
+ if (MSVC)
+   include(cmake/msvc_static_runtime.cmake)
 diff --git a/cmake/ssl.cmake b/cmake/ssl.cmake
 index 83f642a675..007ce99796 100644
 --- a/cmake/ssl.cmake

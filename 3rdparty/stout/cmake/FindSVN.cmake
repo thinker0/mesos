@@ -23,15 +23,26 @@ execute_process(
   OUTPUT_VARIABLE SVN_PREFIX
   OUTPUT_STRIP_TRAILING_WHITESPACE)
 
+set(SVN_PREFIX_CANDIDATES ${SVN_PREFIX})
+
+if (APPLE AND CMAKE_SYSTEM_PROCESSOR MATCHES "^(arm64|aarch64)$")
+  list(APPEND SVN_PREFIX_CANDIDATES /opt/homebrew/opt/subversion)
+endif ()
+
 set(POSSIBLE_SVN_INCLUDE_DIRS
-  ${SVN_PREFIX}/include/subversion-1
+  ${SVN_PREFIX_CANDIDATES}/include/subversion-1
   /usr/include/subversion-1
   /usr/local/include/subversion-1)
 
 set(POSSIBLE_SVN_LIB_DIRS
-  ${SVN_PREFIX}/lib
+  ${SVN_PREFIX_CANDIDATES}/lib
   /usr/lib
   /usr/local/lib)
+
+if (APPLE AND CMAKE_SYSTEM_PROCESSOR MATCHES "^(arm64|aarch64)$")
+  list(REMOVE_ITEM POSSIBLE_SVN_INCLUDE_DIRS /usr/local/include/subversion-1)
+  list(REMOVE_ITEM POSSIBLE_SVN_LIB_DIRS /usr/local/lib)
+endif ()
 
 set(SVN_LIBRARY_NAMES
   svn_delta-1
