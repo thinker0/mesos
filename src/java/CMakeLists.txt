@@ -114,7 +114,11 @@ add_custom_command(
 
 # We include the headers here to establish the dependency
 # on the above custom command.
-add_library(mesos-java ${JAVA_SRC} ${JAVA_H})
+add_library(mesos-java SHARED ${JAVA_SRC} ${JAVA_H})
+
+if (NOT BUILD_SHARED_LIBS)
+  set_target_properties(mesos-java PROPERTIES OUTPUT_NAME mesos)
+endif ()
 
 target_link_libraries(
   mesos-java PUBLIC

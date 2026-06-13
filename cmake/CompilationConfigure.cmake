@@ -342,9 +342,10 @@ if (NOT WIN32)
   #
   # NOTE: Windows and POSIX configurations have to define the same variables,
   # but the layout is different!
+  include(GNUInstallDirs)
   set(MESOS_INSTALL_LAUNCHER  libexec/mesos) # launcher executables
   set(MESOS_INSTALL_RUNTIME   bin)           # all other executables
-  set(MESOS_INSTALL_LIBRARIES lib)           # static and shared libraries
+  set(MESOS_INSTALL_LIBRARIES ${CMAKE_INSTALL_LIBDIR})           # static and shared libraries
   set(MESOS_INSTALL_HEADERS   include)       # headers
   set(MESOS_INSTALL_DATA      share/mesos)   # data (webui, etc.)
 
@@ -635,6 +636,18 @@ endif ()
 # and the final string is saved into the `BUILD_FLAGS` variable.
 get_directory_property(BUILD_FLAGS_RAW COMPILE_DEFINITIONS)
 string(REPLACE "\"" "\\\"" BUILD_FLAGS "${BUILD_FLAGS_RAW}")
+
+option(ENABLE_JAVA
+  "Build Java JNI bindings."
+  OFF)
+
+if (ENABLE_JAVA)
+  find_package(Java COMPONENTS Development REQUIRED)
+  find_package(JNI REQUIRED)
+  set(HAS_JAVA TRUE)
+else ()
+  set(HAS_JAVA FALSE)
+endif ()
 
 set(BUILD_JAVA_JVM_LIBRARY ${JAVA_JVM_LIBRARY})
 
