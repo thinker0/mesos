@@ -54,7 +54,14 @@
     var port = agent.pid.substring(agent.pid.lastIndexOf(':') + 1);
     var processId = agent.pid.substring(0, agent.pid.indexOf('@'));
 
-    var url = '//' + agent.hostname + ':' + port;
+    // Route agent requests through the same origin (the front proxy) under a
+    // dedicated, allow-listed prefix instead of contacting the agent's
+    // `hostname:port` directly. The proxy maps
+    // `/mesos-agents/<host>/<port>/...` to the agent (see the aurproxy
+    // nginx.conf.template `/mesos-agents` location). This keeps agent traffic
+    // flowing through the proxy when agents are not directly reachable from
+    // the browser.
+    var url = '/mesos-agents/' + agent.hostname + '/' + port;
 
     if (includeProcessId) {
       url += '/' + processId;
@@ -64,12 +71,16 @@
   }
 
   function leadingMasterURLPrefix(leader_info) {
-    if (leader_info) {
-      return '//' + leader_info.hostname + ':' + leader_info.port;
-    }
-
-    // If we do not have `leader_info` available (e.g. the first
-    // time we are retrieving state), fallback to the current master.
+    // Always use a relative URL prefix so that every master API request is
+    // issued against the same origin that served the UI (e.g. an nginx reverse
+    // proxy) instead of contacting the leading master's advertised
+    // `hostname:port` directly. This keeps all traffic flowing through the
+    // proxy. It requires that the origin serving the UI proxies these requests
+    // to the leading master (the proxy, not the browser, resolves the leader).
+    //
+    // NOTE: `leader_info` is intentionally ignored; previously this returned
+    // `'//' + leader_info.hostname + ':' + leader_info.port`, which made the
+    // browser bypass any front proxy and call the master leader directly.
     return '';
   }
 
