@@ -1,3 +1,14 @@
+## v1.11.1
+
+- BUMP: Version to 1.11.1.
+- FIX: `mesos-init-wrapper` path formatting and configuration search logic.
+- ADD: RPM build support for CentOS 9, including new scripts and spec files.
+- FIX: Linker errors in gRPC and ZooKeeper interfaces by adding missing library dependencies.
+- FIX: RPM packaging details including filename separators and explicit dependency handling (AUTOREQ).
+- FIX: Compatibility for CentOS 7 and Rocky 8 builds, providing eBPF/cgroup2 stubs for older kernels.
+- UPDATE: Java version to 1.8 for Rocky 8 and CentOS 7 compatibility.
+- UPDATE: Dockerfiles for CentOS 7 and CentOS 8 with corrected repository URLs.
+
 ## Master
 
 - ADD: [master, agent, metrics] live host utilization gauges for CPU, memory,
@@ -107,4 +118,3 @@
 - Fix mesos-tidy build with new gRPC version (Mesos upstream PR).
 - Update grpc to version 1.11.1
 - Add s390x support (Mesos upstream PR).
-
