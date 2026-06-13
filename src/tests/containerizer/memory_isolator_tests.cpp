@@ -150,6 +150,7 @@ TEST_P(MemoryIsolatorTest, ROOT_MemUsage)
   EXPECT_LT(0u, usage->mem_rss_bytes());
 #endif // __WINDOWS__
 
+#ifdef __linux__
   // Metrics for kmem are only enabled with memory isolation.
   if (GetParam() == "cgroups/mem") {
     // Check that at least one page of kernel memory is used. Each page is
@@ -168,7 +169,8 @@ TEST_P(MemoryIsolatorTest, ROOT_MemUsage)
         ASSERT_LT(4096u, usage->mem_kmem_usage_bytes());
       }
     }
- }
+  }
+#endif // __linux__
 
   driver.stop();
   driver.join();

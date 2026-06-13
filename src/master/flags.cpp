@@ -170,6 +170,13 @@ mesos::internal::master::Flags::Flags()
       "Directory path of the webui files/assets",
       PKGDATADIR "/webui");
 
+  add(&Flags::agent_url_prefix,
+      "agent_url_prefix",
+      "URL prefix for agents (e.g., /mesos-agents or legacy). If set to 'legacy',\n"
+      "the Web UI will connect directly to the agent's host and port.\n"
+      "Otherwise, it will use the prefix path /<prefix>/<host>/<port>.",
+      "/mesos-agents");
+
   add(&Flags::whitelist,
       "whitelist",
       "Path to a file which contains a list of agents (one per line) to\n"
