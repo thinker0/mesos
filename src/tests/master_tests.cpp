@@ -206,6 +206,54 @@ TEST_F(MasterTest, CorsAllowedOriginOnMasterAndAgent)
 }
 
 
+TEST_F(MasterTest, AgentURLPrefixFlag)
+{
+  // 1. Verify default value.
+  {
+    master::Flags flags;
+    EXPECT_EQ("/mesos-agents", flags.agent_url_prefix);
+  }
+
+  // 2. Verify loading custom prefix.
+  {
+    master::Flags flags;
+    Try<flags::Warnings> load = flags.load(
+        std::map<string, string>{{"agent_url_prefix", "/my-custom-prefix"}});
+    ASSERT_SOME(load);
+    EXPECT_EQ("/my-custom-prefix", flags.agent_url_prefix);
+  }
+
+  // 3. Verify /master/state output includes the flag.
+  {
+    master::Flags masterFlags = CreateMasterFlags();
+    masterFlags.agent_url_prefix = "/test-prefix";
+
+    Try<Owned<cluster::Master>> master = StartMaster(masterFlags);
+    ASSERT_SOME(master);
+
+    Future<Response> response = process::http::get(
+        master.get()->pid,
+        "state",
+        None(),
+        createBasicAuthHeaders(DEFAULT_CREDENTIAL));
+
+    AWAIT_EXPECT_RESPONSE_STATUS_EQ(OK().status, response);
+    AWAIT_EXPECT_RESPONSE_HEADER_EQ(APPLICATION_JSON, "Content-Type", response);
+
+    Try<JSON::Object> parse = JSON::parse<JSON::Object>(response->body);
+    ASSERT_SOME(parse);
+
+    Result<JSON::Object> flags = parse->find<JSON::Object>("flags");
+    ASSERT_SOME(flags);
+
+    Result<JSON::String> agentUrlPrefix = flags->find<JSON::String>("agent_url_prefix");
+    ASSERT_SOME(agentUrlPrefix);
+    EXPECT_EQ("/test-prefix", agentUrlPrefix->value);
+  }
+}
+}
+
+
 TEST_F(MasterTest, TaskRunning)
 {
   Try<Owned<cluster::Master>> master = StartMaster();

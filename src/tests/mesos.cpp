@@ -851,6 +851,7 @@ void ContainerizerTest<slave::MesosContainerizer>::TearDownCgroupsV2()
 #endif // __linux__
 
 
+#ifdef __linux__
 bool ContainerizerTest<slave::MesosContainerizer>::cgroupsV2()
 {
   Try<bool> mounted = cgroups2::mounted();
@@ -859,6 +860,7 @@ bool ContainerizerTest<slave::MesosContainerizer>::cgroupsV2()
   }
   return *mounted;
 }
+#endif
 
 
 string ParamDiskQuota::Printer::operator()(

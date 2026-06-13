@@ -37,7 +37,7 @@ cmake "${MESOS_DIR}" \
   -DCMAKE_INSTALL_PREFIX=/usr
 
 # Build the project
-cmake --build . --parallel 3
+cmake --build . --parallel 8
 
 # Generate the RPM using CPack
 cpack -G RPM

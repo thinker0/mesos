@@ -59,6 +59,7 @@ public:
   std::string recovery_agent_removal_limit;
   Option<std::string> agent_removal_rate_limit;
   std::string webui_dir;
+  std::string agent_url_prefix;
   Option<Path> whitelist;
   std::string role_sorter;
   std::string framework_sorter;

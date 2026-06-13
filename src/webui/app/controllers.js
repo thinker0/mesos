@@ -18,6 +18,7 @@
   'use strict';
 
   var mesosApp = angular.module('mesos');
+  var rootScope;
 
   function hasSelectedText() {
     if (window.getSelection) {  // All browsers except IE before version 9.
@@ -54,14 +55,20 @@
     var port = agent.pid.substring(agent.pid.lastIndexOf(':') + 1);
     var processId = agent.pid.substring(0, agent.pid.indexOf('@'));
 
-    // Route agent requests through the same origin (the front proxy) under a
-    // dedicated, allow-listed prefix instead of contacting the agent's
-    // `hostname:port` directly. The proxy maps
-    // `/mesos-agents/<host>/<port>/...` to the agent (see the aurproxy
-    // nginx.conf.template `/mesos-agents` location). This keeps agent traffic
-    // flowing through the proxy when agents are not directly reachable from
-    // the browser.
-    var url = '/mesos-agents/' + agent.hostname + '/' + port;
+    var prefix = '/mesos-agents';
+    if (rootScope && rootScope.state && rootScope.state.flags && rootScope.state.flags.agent_url_prefix) {
+      prefix = rootScope.state.flags.agent_url_prefix;
+    }
+
+    var url = '';
+    if (prefix === 'legacy') {
+      url = '//' + agent.hostname + ':' + port;
+    } else {
+      if (prefix && prefix.charAt(0) !== '/') {
+        prefix = '/' + prefix;
+      }
+      url = prefix + '/' + agent.hostname + '/' + port;
+    }
 
     if (includeProcessId) {
       url += '/' + processId;
@@ -402,8 +409,9 @@
   // active controller/view to easily access anything in scope (e.g.,
   // the state).
   mesosApp.controller('MainCtrl', [
-      '$scope', '$http', '$location', '$timeout', '$modal',
-      function($scope, $http, $location, $timeout, $modal) {
+      '$scope', '$rootScope', '$http', '$location', '$timeout', '$modal',
+      function($scope, $rootScope, $http, $location, $timeout, $modal) {
+    rootScope = $rootScope;
     $scope.doneLoading = true;
 
     // Adding bindings into scope so that they can be used from within
