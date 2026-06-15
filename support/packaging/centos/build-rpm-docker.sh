@@ -60,6 +60,7 @@ docker run \
   --platform linux/amd64 \
   $TTYARGS \
   --rm \
+  --dns 8.8.8.8 \
   --user "${USER_ID}:${GROUP_ID}" \
   --group-add 0 \
   --group-add "${DOCKER_SOCKET_GID}" \

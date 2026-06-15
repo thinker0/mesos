@@ -51,6 +51,23 @@
   // Note that there are some clashing issues in mesos-local
   // (e.g., hosting '/slave/log' for each agent log, we don't
   // namespace metrics within '/metrics/snapshot', etc).
+  function getWebuiPrefix() {
+    var path = window.location.pathname;
+    var lastSlash = path.lastIndexOf('/');
+    if (lastSlash !== -1) {
+      path = path.substring(0, lastSlash);
+    }
+    if (path.endsWith('/app/shared')) {
+      path = path.substring(0, path.length - 11);
+    } else if (path.endsWith('/app')) {
+      path = path.substring(0, path.length - 4);
+    }
+    if (path === '/' || path === '') {
+      return '';
+    }
+    return path;
+  }
+
   function agentURLPrefix(agent, includeProcessId) {
     var port = agent.pid.substring(agent.pid.lastIndexOf(':') + 1);
     var processId = agent.pid.substring(0, agent.pid.indexOf('@'));
@@ -591,7 +608,7 @@
     var update = function() {
       $scope.streamLogs = function(_$event) {
         pailer(
-            leadingMasterURLPrefix($scope.state.leader_info),
+            getWebuiPrefix() + leadingMasterURLPrefix($scope.state.leader_info),
             '/master/log',
             'Mesos Master (' + hostname + ')');
       };
@@ -603,7 +620,7 @@
         $scope.state.flags.external_log_file || $scope.state.flags.log_dir;
 
       $scope.leader_url_prefix =
-        leadingMasterURLPrefix($scope.state.leader_info);
+        getWebuiPrefix() + leadingMasterURLPrefix($scope.state.leader_info);
     };
 
     if ($scope.state) {

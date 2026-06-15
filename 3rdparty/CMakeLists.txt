@@ -832,12 +832,12 @@ elseif (NOT WIN32) # Windows defaults to `libwinio`, a native implementation.
   # https://github.com/enki/libev
   ###################################################
   EXTERNAL(libev ${LIBEV_VERSION} ${CMAKE_CURRENT_BINARY_DIR})
-  add_library(libev SHARED IMPORTED)
+  add_library(libev STATIC IMPORTED)
   add_dependencies(libev ${LIBEV_TARGET})
 
   set_target_properties(
     libev PROPERTIES
-    IMPORTED_LOCATION ${LIBEV_ROOT}-build/lib/libev${CMAKE_SHARED_LIBRARY_SUFFIX}
+    IMPORTED_LOCATION ${LIBEV_ROOT}-build/lib/libev${CMAKE_STATIC_LIBRARY_SUFFIX}
     INTERFACE_INCLUDE_DIRECTORIES ${LIBEV_ROOT}-build/include)
 
   # Patch libev to keep it from reaping child processes.
@@ -847,15 +847,17 @@ elseif (NOT WIN32) # Windows defaults to `libwinio`, a native implementation.
   GET_BYPRODUCTS(libev)
 
   set(LIBEV_CONFIGURE_COMMAND
-    ${LIBEV_ROOT}/configure --prefix=${LIBEV_ROOT}-build)
+    ${CMAKE_COMMAND} -E env
+    CFLAGS=-fPIC
+    ${LIBEV_ROOT}/configure --disable-shared --prefix=${LIBEV_ROOT}-build)
 
   if (APPLE AND CMAKE_SYSTEM_PROCESSOR MATCHES "^(arm64|aarch64)$")
     set(LIBEV_CONFIGURE_COMMAND
       ${CMAKE_COMMAND} -E env
-      CFLAGS=-arch\ arm64
-      CXXFLAGS=-arch\ arm64
+      CFLAGS=-arch\ arm64\ -fPIC
+      CXXFLAGS=-arch\ arm64\ -fPIC
       LDFLAGS=-arch\ arm64
-      ${LIBEV_ROOT}/configure --prefix=${LIBEV_ROOT}-build)
+      ${LIBEV_ROOT}/configure --disable-shared --prefix=${LIBEV_ROOT}-build)
   endif ()
 
   ExternalProject_Add(
@@ -869,9 +871,6 @@ elseif (NOT WIN32) # Windows defaults to `libwinio`, a native implementation.
     URL               ${LIBEV_URL}
     URL_HASH          ${LIBEV_HASH})
 
-  install(
-    DIRECTORY ${LIBEV_ROOT}-build/lib/
-    DESTINATION ${3RDPARTY_LIBS_INSTALL_DIR})
 endif ()
 
 
