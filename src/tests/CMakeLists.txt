@@ -294,6 +294,11 @@ target_link_libraries(
   mesos
   googletest)
 
+if (HAS_JAVA)
+  target_include_directories(mesos-tests-interface INTERFACE ${JNI_INCLUDE_DIRS})
+  target_link_libraries(mesos-tests-interface INTERFACE mesos-java)
+endif ()
+
 if (NOT WIN32)
   target_link_libraries(
     mesos-tests-interface INTERFACE
