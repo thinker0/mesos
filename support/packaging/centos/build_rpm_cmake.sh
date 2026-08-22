@@ -36,8 +36,8 @@ cmake "${MESOS_DIR}" \
   -DENABLE_JAVA=ON \
   -DCMAKE_INSTALL_PREFIX=/usr
 
-# Build the project
-cmake --build . --parallel 8
+# Build the project (use 4 parallel jobs to avoid OOM killer)
+cmake --build . --parallel 4
 
 # Generate the RPM using CPack
 cpack -G RPM

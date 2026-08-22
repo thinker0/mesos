@@ -35,7 +35,7 @@ endif()
 set(MESOS_MAJOR_VERSION 1)
 set(MESOS_MINOR_VERSION 12)
 set(MESOS_PATCH_VERSION 0)
-set(MESOS_SUB_VERSION 0.9.1)
+set(MESOS_SUB_VERSION 0.9.2)
 set(PACKAGE_VERSION
   ${MESOS_MAJOR_VERSION}.${MESOS_MINOR_VERSION}.${MESOS_PATCH_VERSION})
 set(CLUSTERD_VERSION ${PACKAGE_VERSION})
@@ -179,6 +179,7 @@ set(CPACK_PACKAGE_VENDOR ${CPACK_PACKAGE_MAINTAINER})
 if(OS_DISTRIBUTION MATCHES "^centos7" OR OS_DISTRIBUTION MATCHES "^rocky")
   # Since we disable AUTOREQ to ignore bundled .so files, we must specify system deps
   set(CPACK_RPM_PACKAGE_REQUIRES "apr, cyrus-sasl-lib, libcurl, zlib, epel-release")
+  set(CPACK_RPM_PACKAGE_OBSOLETES "protobuf-compiler")
 endif()
 
 # By default, all forms of binary packages are disabled.
