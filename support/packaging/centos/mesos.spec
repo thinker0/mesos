@@ -71,6 +71,12 @@ Requires: cyrus-sasl-md5
 
 Requires: ntp
 
+# mesos bundles its own protobuf and installs /usr/bin/protoc, which file-conflicts
+# with the OS protobuf-compiler package (e.g. protobuf-compiler-2.5.0-8.el7 on CentOS7),
+# causing a yum transaction check error on install. Obsolete it so yum replaces
+# protobuf-compiler with mesos on install instead of failing (no per-host manual removal).
+Obsoletes: protobuf-compiler
+
 %description
 Apache Mesos is a cluster manager that provides efficient resource
 isolation and sharing across distributed applications, or frameworks.
