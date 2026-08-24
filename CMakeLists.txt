@@ -180,6 +180,14 @@ if(OS_DISTRIBUTION MATCHES "^centos7" OR OS_DISTRIBUTION MATCHES "^rocky")
   # Since we disable AUTOREQ to ignore bundled .so files, we must specify system deps
   set(CPACK_RPM_PACKAGE_REQUIRES "apr, cyrus-sasl-lib, libcurl, zlib, epel-release")
   set(CPACK_RPM_PACKAGE_OBSOLETES "protobuf-compiler")
+
+  # CPack emits empty scriptlet stubs unless told otherwise, so the ldconfig the pre-CPack rpm ran
+  # in %post was lost. Restore it -- and only it: that rpm also enabled mesos-master and mesos-slave
+  # on every install, which is how agent-only hosts ended up running a master. See the scripts.
+  set(CPACK_RPM_POST_INSTALL_SCRIPT_FILE
+      "${CMAKE_SOURCE_DIR}/support/packaging/common/rpm-post-install.sh")
+  set(CPACK_RPM_POST_UNINSTALL_SCRIPT_FILE
+      "${CMAKE_SOURCE_DIR}/support/packaging/common/rpm-post-uninstall.sh")
 endif()
 
 # By default, all forms of binary packages are disabled.
