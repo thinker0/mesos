@@ -1,5 +1,7 @@
 #!/bin/sh
-# CPack RPM %postun -- restores what the spec-built packages did.
+# CPack RPM post-uninstall scriptlet -- restores what the spec-built packages did.
+# Keep macro names out of this file with their leading percent sign: rpmbuild expands them
+# even inside comments (see rpm-post-install.sh).
 #
 # Every package up to 1.10.0 ran /sbin/ldconfig here. The 1.11.0-2.0.1 line lost it, leaving only a
 # commented-out `#rm -rf /var/log/mesos /etc/mesos`, and the CPack build then dropped the scriptlet

@@ -1,7 +1,13 @@
 #!/bin/sh
-# CPack RPM %post -- restores what the spec-built packages did, which the CPack build dropped.
+# CPack RPM post-install scriptlet -- restores what the spec-built packages did,
+# which the CPack build dropped.
 #
-# Up to 1.10.0 (and 1.11.0-0.el8) this was the standard %systemd_post expansion:
+# Up to 1.10.0 (and 1.11.0-0.el8) this was the standard systemd_post macro expansion:
+#
+# NOTE: do not write that macro name with its leading percent sign anywhere in this file.
+# CPack embeds the file verbatim into the generated spec and rpmbuild expands any macro it
+# recognises -- including inside comments. Doing so once injected a live
+# `systemctl preset expansion:` block into the built package's post-install scriptlet.
 #
 #     /sbin/ldconfig
 #     if [ $1 -eq 1 ] ; then
